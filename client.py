@@ -1,6 +1,13 @@
 import rsa
+import hashlib
+
 import socket
 import threading
+
+
+def get_hash(message):
+    """Get hash of the message"""
+    return hashlib.sha256(message.encode()).hexdigest()
 
 class Client:
     def __init__(self, server_ip: str, port: int, username: str) -> None:
@@ -43,19 +50,25 @@ class Client:
         while True:
             message = self.s.recv(1024).decode()
 
+            message_hash, message = message.split(":", 1)
             # Decrypt message using server's private key
             message = rsa.decrypt(message, self.d, self.n)
 
-            print(message)
+            if str(get_hash(message)) == message_hash:
+                print(message)
+            else:
+                print("Message is corrupted")
 
     def write_handler(self):
         while True:
             message = input()
 
+            message_hash = str(get_hash(message))
             # Encrypt message using server's public key
             message = rsa.encrypt(message, self.e, self.n)
 
-            self.s.send(message.encode())
+            self.s.send(f"{message_hash}:{message}".encode())
+
 
 if __name__ == "__main__":
     cl = Client("127.0.0.1", 9001, "b_g")

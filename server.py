@@ -1,6 +1,12 @@
 import rsa
+import hashlib
+
 import socket
 import threading
+
+def get_hash(message):
+    """Get hash of the message"""
+    return hashlib.sha256(message.encode()).hexdigest()
 
 class Server:
 
@@ -25,7 +31,9 @@ class Server:
             c, addr = self.s.accept()
             username = c.recv(1024).decode()
             print(f"{username} tries to connect")
-            self.broadcast(rsa.encrypt(f'new person has joined: {username}', self.e, self.n))
+            self.broadcast(f"{str(get_hash(f'new person has joined: {username}'))}:{\
+                    rsa.encrypt(f'new person has joined: {username}', self.e, self.n)}")
+
             self.username_lookup[c] = username
             self.clients.append(c)
 
@@ -40,7 +48,6 @@ class Server:
 
     def broadcast(self, msg: str):
         for client in self.clients:
-
             client.send(msg.encode())
 
     def handle_client(self, c: socket, addr):
