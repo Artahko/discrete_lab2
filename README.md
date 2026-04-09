@@ -2,9 +2,9 @@
 ![](usage_example.png)
 
 ## Tasks
-- RSA for digital signature 
+- RSA for digital signature
 - message integrity with hashes
 - Encryption algo
 
-## Theory: 
+## Theory:
 - https://github.com/zademn/EverythingCrypto

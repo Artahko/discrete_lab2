@@ -1,5 +1,6 @@
 import socket
 import threading
+from rsa import generate_keys, encrypt
 
 class Server:
 
@@ -14,7 +15,8 @@ class Server:
         self.s.bind((self.host, self.port))
         self.s.listen(100)
 
-        # generate keys ...
+        # Generate keys
+        e, d, n = generate_keys()
 
         while True:
             c, addr = self.s.accept()
@@ -24,7 +26,7 @@ class Server:
             self.username_lookup[c] = username
             self.clients.append(c)
 
-            # send public key to the client 
+            # send public key to the client
 
             # ...
 
@@ -32,14 +34,14 @@ class Server:
 
             # ...
 
-            # send the encrypted secret to a client 
+            # send the encrypted secret to a client
 
             # ...
 
             threading.Thread(target=self.handle_client,args=(c,addr,)).start()
 
     def broadcast(self, msg: str):
-        for client in self.clients: 
+        for client in self.clients:
 
             # encrypt the message
 
@@ -47,7 +49,7 @@ class Server:
 
             client.send(msg.encode())
 
-    def handle_client(self, c: socket, addr): 
+    def handle_client(self, c: socket, addr):
         while True:
             msg = c.recv(1024)
 
@@ -57,4 +59,5 @@ class Server:
 
 if __name__ == "__main__":
     s = Server(9001)
-    s.start()
+    print(generate_keys())
+    # s.start()
