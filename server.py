@@ -1,6 +1,6 @@
+import rsa
 import socket
 import threading
-from rsa import generate_keys, encrypt
 
 class Server:
 
@@ -11,41 +11,35 @@ class Server:
         self.username_lookup = {}
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
+        # Generate keys
+        e, d, n = rsa.generate_keys()
+        self.e = e
+        self.d = d
+        self.n = n
+
     def start(self):
         self.s.bind((self.host, self.port))
         self.s.listen(100)
-
-        # Generate keys
-        e, d, n = generate_keys()
 
         while True:
             c, addr = self.s.accept()
             username = c.recv(1024).decode()
             print(f"{username} tries to connect")
-            self.broadcast(f'new person has joined: {username}')
+            self.broadcast(rsa.encrypt(f'new person has joined: {username}', self.e, self.n))
             self.username_lookup[c] = username
             self.clients.append(c)
 
-            # send public key to the client
+            # Get client's public key
+            client_public_key = c.recv(1024).decode()
+            client_e, client_n = [int(el) for el in client_public_key.split()]
 
-            # ...
-
-            # encrypt the secret with the clients public key
-
-            # ...
-
-            # send the encrypted secret to a client
-
-            # ...
+            # Send encrypted server's public and private keys to the client
+            c.send(rsa.encrypt(f"{self.e} {self.d} {self.n}", client_e, client_n).encode())
 
             threading.Thread(target=self.handle_client,args=(c,addr,)).start()
 
     def broadcast(self, msg: str):
         for client in self.clients:
-
-            # encrypt the message
-
-            # ...
 
             client.send(msg.encode())
 
@@ -59,5 +53,4 @@ class Server:
 
 if __name__ == "__main__":
     s = Server(9001)
-    print(generate_keys())
-    # s.start()
+    s.start()

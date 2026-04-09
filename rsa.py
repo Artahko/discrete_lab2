@@ -73,7 +73,7 @@ def encrypt(m, e, n):
     """Encrypts message using public key (e, n) and returns encrypted cipher as string of numbers"""
     # Turn message into a list of numbers
     num_message = [ord(el) for el in m]
-    cipher = [power(el, e, n) for el in num_message]
+    cipher = [str(power(el, e, n)) for el in num_message]
 
     return " ".join(cipher)
 
